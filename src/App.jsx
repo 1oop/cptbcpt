@@ -40,6 +40,7 @@ export default function App() {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const [generatedName, setGeneratedName] = useState('')
   const canvasRef = useRef(null)
 
   const handleGenerate = useCallback(async () => {
@@ -53,6 +54,7 @@ export default function App() {
 
     try {
       await renderCertificate(canvasRef.current, trimmedName)
+      setGeneratedName(trimmedName)
       setShowPreview(true)
 
       setTimeout(() => {
@@ -79,6 +81,12 @@ export default function App() {
     document.body.removeChild(link)
   }, [])
 
+  const handleReset = useCallback(() => {
+    setShowPreview(false)
+    setGeneratedName('')
+    setName('')
+  }, [])
+
   const handleKeyPress = useCallback((e) => {
     if (e.key === 'Enter') {
       handleGenerate()
@@ -87,44 +95,56 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <div className="page-header">
-        <h1>
-          <span className="ornament">✦</span>
-          恒洁结业证书
-          <span className="ornament">✦</span>
-        </h1>
-        <p>输入姓名，生成您的专属结业证书</p>
-      </div>
+      {!showPreview ? (
+        <>
+          <div className="page-header">
+            <h1>
+              <span className="ornament">✦</span>
+              恒洁结业证书
+              <span className="ornament">✦</span>
+            </h1>
+            <p>输入姓名，生成您的专属结业证书</p>
+          </div>
 
-      <div className="input-section">
-        <div className="input-group">
-          <label htmlFor="userName">学员姓名</label>
-          <input
-            id="userName"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="请输入您的姓名"
-            maxLength={20}
-            autoComplete="off"
-          />
-        </div>
-        <button
-          className="btn-generate"
-          onClick={handleGenerate}
-          disabled={loading}
-        >
-          {loading ? '生成中...' : '生成结业证书'}
-        </button>
-      </div>
+          <div className="input-section">
+            <div className="input-group">
+              <label htmlFor="userName">学员姓名</label>
+              <input
+                id="userName"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="请输入您的姓名"
+                maxLength={20}
+                autoComplete="off"
+              />
+            </div>
+            <button
+              className="btn-generate"
+              onClick={handleGenerate}
+              disabled={loading}
+            >
+              {loading ? '生成中...' : '生成结业证书'}
+            </button>
+          </div>
+        </>
+      ) : null}
 
       <div
         id="preview-section"
         className={`preview-section ${showPreview ? 'active' : ''}`}
       >
         <div className="preview-header">
-          <h3>证书预览</h3>
+          <div className="preview-title-group">
+            <button className="btn-back" onClick={handleReset}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+              返回
+            </button>
+            <h3>{generatedName} 的结业证书</h3>
+          </div>
           <button className="btn-download" onClick={handleDownload}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>

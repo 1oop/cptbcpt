@@ -136,6 +136,45 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  gap: 12px;
+}
+
+.preview-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-title-group h3 {
+  font-size: 16px;
+  color: var(--gold-deep);
+  margin: 0;
+}
+
+.btn-back {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text-medium);
+  border: 1px solid var(--gold-light);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Noto Serif SC', serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-back:hover {
+  background: white;
+  border-color: var(--gold-primary);
+  color: var(--text-dark);
+}
+
+.btn-back svg {
+  width: 16px;
+  height: 16px;
 }
 
 .preview-header h3 {
