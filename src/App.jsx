@@ -1,10 +1,12 @@
 import { useState, useRef, useCallback } from 'react'
 
+const BASE_URL = import.meta.env.BASE_URL
+
 const CERT_CONFIG = {
   canvasWidth: 1200,
   canvasHeight: 850,
   namePosition: { x: 600, y: 350, fontSize: 36, fontColor: '#2C2416' },
-  templatePath: '/template.png'
+  templatePath: `${BASE_URL}template.png`
 }
 
 function loadTemplateImage() {
