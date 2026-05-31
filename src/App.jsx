@@ -74,7 +74,7 @@ export default function App() {
   const handleDownload = useCallback(() => {
     const canvas = canvasRef.current
     const link = document.createElement('a')
-    link.download = `恒洁结业证书_${Date.now()}.png`
+    link.download = `结营证书_${generatedName}.png`
     link.href = canvas.toDataURL('image/png', 1.0)
     document.body.appendChild(link)
     link.click()
