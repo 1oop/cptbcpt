@@ -3,10 +3,13 @@ import { useState, useRef, useCallback } from 'react'
 const BASE_URL = import.meta.env.BASE_URL
 
 const CERT_CONFIG = {
-  canvasWidth: 1200,
-  canvasHeight: 850,
-  namePosition: { x: 600, y: 350, fontSize: 36, fontColor: '#2C2416' },
-  templatePath: `${BASE_URL}template.png`
+  canvasWidth: 3437,
+  canvasHeight: 2551,
+  // Name sits just above the blank line (line acts as an underline).
+  // textBaseline is 'middle', so y is raised by ~half the font size to rest
+  // the bottom of the characters on the line.
+  namePosition: { x: 1718, y: 1135 - 65, fontSize: 110, fontColor: '#2C2416' },
+  templatePath: `${BASE_URL}template1.png`
 }
 
 function loadTemplateImage() {
@@ -79,7 +82,7 @@ export default function App() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-  }, [])
+  }, [generatedName])
 
   const handleReset = useCallback(() => {
     setShowPreview(false)
@@ -95,55 +98,56 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {!showPreview ? (
-        <>
-          <div className="page-header">
-            <h1>
-              <span className="ornament">✦</span>
-              恒洁结业证书
-              <span className="ornament">✦</span>
-            </h1>
-            <p>输入姓名，生成您的专属结业证书</p>
-          </div>
+      <header className="page-header">
+        <div className="brand-mark">
+          <span className="brand-rule" />
+          <span className="brand-eyebrow">恒洁营销赋能学院</span>
+          <span className="brand-rule" />
+        </div>
+        <h1 className="page-title">结营证书</h1>
+        <p className="page-subtitle">输入学员姓名，即刻签发专属结业证书</p>
+      </header>
 
-          <div className="input-section">
-            <div className="input-group">
-              <label htmlFor="userName">学员姓名</label>
-              <input
-                id="userName"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="请输入您的姓名"
-                maxLength={20}
-                autoComplete="off"
-              />
-            </div>
-            <button
-              className="btn-generate"
-              onClick={handleGenerate}
-              disabled={loading}
-            >
-              {loading ? '生成中...' : '生成结业证书'}
-            </button>
+      {!showPreview ? (
+        <main className="panel input-panel">
+          <div className="input-group">
+            <label htmlFor="userName">学员姓名</label>
+            <input
+              id="userName"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="请输入姓名"
+              maxLength={20}
+              autoComplete="off"
+            />
           </div>
-        </>
+          <button
+            className="btn-generate"
+            onClick={handleGenerate}
+            disabled={loading}
+          >
+            {loading ? '签发中…' : '签发证书'}
+          </button>
+          <p className="panel-hint">证书为高清 PNG，签发后可下载保存或打印</p>
+        </main>
       ) : null}
 
-      <div
+      <section
         id="preview-section"
         className={`preview-section ${showPreview ? 'active' : ''}`}
       >
         <div className="preview-header">
+          <button className="btn-back" onClick={handleReset}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            重新签发
+          </button>
           <div className="preview-title-group">
-            <button className="btn-back" onClick={handleReset}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="15 18 9 12 15 6"/>
-              </svg>
-              返回
-            </button>
-            <h3>{generatedName} 的结业证书</h3>
+            <span className="preview-cert-label">{generatedName}</span>
+            <span className="preview-cert-sub">结营证书</span>
           </div>
           <button className="btn-download" onClick={handleDownload}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -154,21 +158,23 @@ export default function App() {
             下载证书
           </button>
         </div>
-        <div className="certificate-container">
+        <div className="certificate-frame">
           <canvas ref={canvasRef} />
         </div>
-      </div>
+      </section>
 
       <div className={`loading-overlay ${loading ? 'active' : ''}`}>
         <div className="loading-spinner">
           <div className="spinner" />
-          <p>正在生成证书...</p>
+          <p>正在签发证书…</p>
         </div>
       </div>
 
-      <div className="footer">
+      <footer className="footer">
+        <span className="footer-ornament">✦</span>
         恒洁营销赋能学院 · 2026
-      </div>
+        <span className="footer-ornament">✦</span>
+      </footer>
     </div>
   )
 }
