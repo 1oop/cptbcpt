@@ -1,42 +1,48 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import certBg from 'virtual:cert-bg'
 
-const BASE_URL = import.meta.env.BASE_URL
+// The certificate background is pre-rendered at build time (see vite.config.js)
+// and served as a single compact JPEG. We fetch it once and cache the decoded
+// image, so generating a certificate only ever draws the name on top.
+const MASTER = { width: 3437, height: 2551 }
+// Name anchor measured on the master template, just above the blank line.
+const NAME_MASTER = { x: 1718, y: 1135 - 65, fontSize: 110, color: '#2C2416' }
 
-const CERT_CONFIG = {
-  canvasWidth: 3437,
-  canvasHeight: 2551,
-  // Name sits just above the blank line (line acts as an underline).
-  // textBaseline is 'middle', so y is raised by ~half the font size to rest
-  // the bottom of the characters on the line.
-  namePosition: { x: 1718, y: 1135 - 65, fontSize: 110, fontColor: '#2C2416' },
-  templatePath: `${BASE_URL}template1.png`
+const SCALE = certBg.width / MASTER.width
+const NAME = {
+  x: Math.round(NAME_MASTER.x * SCALE),
+  y: Math.round(NAME_MASTER.y * SCALE),
+  fontSize: Math.round(NAME_MASTER.fontSize * SCALE),
+  color: NAME_MASTER.color
 }
 
-function loadTemplateImage() {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = () => resolve(img)
-    img.onerror = reject
-    img.src = CERT_CONFIG.templatePath
-  })
+let bgImagePromise = null
+function loadBackground() {
+  if (!bgImagePromise) {
+    bgImagePromise = new Promise((resolve, reject) => {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => resolve(img)
+      img.onerror = reject
+      img.src = certBg.url
+    })
+  }
+  return bgImagePromise
 }
 
-function renderCertificate(canvas, name) {
+function renderCertificate(canvas, bgImage, name) {
   const ctx = canvas.getContext('2d')
 
-  canvas.width = CERT_CONFIG.canvasWidth
-  canvas.height = CERT_CONFIG.canvasHeight
+  canvas.width = certBg.width
+  canvas.height = certBg.height
 
-  return loadTemplateImage().then(templateImg => {
-    ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height)
+  ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height)
 
-    ctx.font = `bold ${CERT_CONFIG.namePosition.fontSize}px "Noto Serif SC", "SimSun", serif`
-    ctx.fillStyle = CERT_CONFIG.namePosition.fontColor
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText(name, CERT_CONFIG.namePosition.x, CERT_CONFIG.namePosition.y)
-  })
+  ctx.font = `bold ${NAME.fontSize}px "Noto Serif SC", "SimSun", serif`
+  ctx.fillStyle = NAME.color
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(name, NAME.x, NAME.y)
 }
 
 export default function App() {
@@ -45,6 +51,11 @@ export default function App() {
   const [showPreview, setShowPreview] = useState(false)
   const [generatedName, setGeneratedName] = useState('')
   const canvasRef = useRef(null)
+
+  // Warm the cache so the first generation is instant.
+  useEffect(() => {
+    loadBackground().catch(err => console.error('背景加载失败:', err))
+  }, [])
 
   const handleGenerate = useCallback(async () => {
     const trimmedName = name.trim()
@@ -56,7 +67,8 @@ export default function App() {
     setLoading(true)
 
     try {
-      await renderCertificate(canvasRef.current, trimmedName)
+      const bgImage = await loadBackground()
+      renderCertificate(canvasRef.current, bgImage, trimmedName)
       setGeneratedName(trimmedName)
       setShowPreview(true)
 
